@@ -38,8 +38,6 @@ always@(posedge clk or negedge rst_n)begin
     addreg <= 16'd0;
     count <= 1'd0;
     prev_sclk <= 1'b0;
-
-    end
  end else begin
    if (syncedcs && transaction_processed)begin
         transaction_processed <= 1'b0;
@@ -55,6 +53,7 @@ always@(posedge clk or negedge rst_n)begin
         end
         prev_sclk <= syncedsclk;                 //sets current clock to previous clock
         transaction_ready <= 1'b0;
+  end
  end
 end
 
