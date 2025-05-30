@@ -3,7 +3,7 @@
 
 module spi_peripheral(
      input wire clk,
-    input wire reset,
+    input wire rst_n,
     input wire[2:0] ui_in,
     output reg [7:0] en_reg_out_7_0,
     output reg [7:0] en_reg_out_15_8,
@@ -31,8 +31,8 @@ end
 
 
 
-always@(posedge clk or negedge reset)begin
- if(~reset)begin   
+always@(posedge clk or negedge rst_n)begin
+ if(rst_n)begin   
      transaction_processed <= 1'b0;
     transaction_ready <= 1'b0;
     addreg <= 16'd0;
@@ -59,8 +59,8 @@ always@(posedge clk or negedge reset)begin
 end
 
 
-always@(posedge clk or negedge reset)begin
-if(~reset)begin
+always@(posedge clk or negedge rst_n)begin
+if(rst_n)begin
         transaction_processed <= 1'b0;
         en_reg_out_7_0 <= 8'd0;
         en_reg_out_15_8 <= 8'd0;
