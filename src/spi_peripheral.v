@@ -2,9 +2,9 @@
 
 
 module spi_peripheral(
-    input wire[2:0] ui_in,
-    input wire clk,
+     input wire clk,
     input wire reset,
+    input wire[2:0] ui_in,
     output reg [7:0] en_reg_out_7_0,
     output reg [7:0] en_reg_out_15_8,
     output reg [7:0] en_reg_pwm_7_0,
