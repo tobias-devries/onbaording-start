@@ -9,7 +9,7 @@ module spi_peripheral(
     output reg [7:0] en_reg_out_15_8,
     output reg [7:0] en_reg_pwm_7_0,
     output reg [7:0] en_reg_pwm_15_8,
-    output reg [7:0] pwm_duty_cycle;
+    output reg [7:0] pwm_duty_cycle
 );
 
 reg [2:0] syncbit1, syncbit2, syncbit3;
@@ -32,7 +32,7 @@ end
 
 
 always@(posedge clk or negedge rst_n)begin
- if(rst_n)begin   
+ if(~rst_n)begin   
      transaction_processed <= 1'b0;
     transaction_ready <= 1'b0;
     addreg <= 16'd0;
@@ -60,7 +60,7 @@ end
 
 
 always@(posedge clk or negedge rst_n)begin
-if(rst_n)begin
+if(~rst_n)begin
         transaction_processed <= 1'b0;
         en_reg_out_7_0 <= 8'd0;
         en_reg_out_15_8 <= 8'd0;
@@ -71,19 +71,19 @@ if(rst_n)begin
 end else begin
 if(addreg[0] && transaction_ready) begin
     casez (addreg)
-    16'bx0000000xxxxxxxxx: begin
+    16'bx0000000xxxxxxxx: begin
         en_reg_out_7_0<=addreg[7:0];
     end
-    16'bx0000001xxxxxxxxx: begin
+    16'bx0000001xxxxxxxx: begin
         en_reg_out_15_8<=addreg[7:0];
     end
-    16'bx0000010xxxxxxxxx: begin
+    16'bx0000010xxxxxxxx: begin
         en_reg_pwm_7_0<=addreg[7:0];
     end 
-    16'bx0000011xxxxxxxxx: begin
+    16'bx0000011xxxxxxxx: begin
         en_reg_pwm_15_8<=addreg[7:0];
     end
-    16'bx0000100xxxxxxxxx: begin
+    16'bx0000100xxxxxxxx: begin
         pwm_duty_cycle<=addreg[7:0];
     end 
     default: begin
