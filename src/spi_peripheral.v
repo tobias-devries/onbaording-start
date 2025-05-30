@@ -5,18 +5,20 @@ module spi_peripheral(
     input wire[2:0] ui_in,
     input wire clk,
     input wire reset,
-    input reg [7:0] en_reg_out_7_0,
-    input reg [15:8] en_reg_out_15_8,
-    input reg [7:0] en_reg_pwm_7_0,
-    input reg [15:8] en_reg_pwm_15_8,
-    input reg [7:0] pwm_duty_cycle;
+    output reg [7:0] en_reg_out_7_0,
+    output reg [7:0] en_reg_out_15_8,
+    output reg [7:0] en_reg_pwm_7_0,
+    output reg [7:0] en_reg_pwm_15_8,
+    output reg [7:0] pwm_duty_cycle;
 );
 
 reg [2:0] syncbit1, syncbit2, syncbit3;
-reg syncedsclk, syncedcs, syncedcopi, prev_sclk, transaction_ready, transcation_processed;
-reg [15:0] addreg, count;
-
-assign prev_sclk = 1'b0;
+reg syncedsclk, syncedcs, syncedcopi;
+reg [15:0] addreg;
+reg [4:0] count;
+reg prev_sclk = 1'b0;
+reg transaction_processed = 1'b0;
+reg transaction_ready = 1'b0;
 
 always@(posedge clk)begin
 syncbit1<=ui_in;
@@ -30,25 +32,43 @@ end
 
 
 always@(posedge clk or negedge reset)begin
- if(~reset)begin                                //does this if reset is false
+ if(~reset)begin   
+     transaction_processed <= 1'b0;
     transaction_ready <= 1'b0;
-    if(syncedcs)begin                           //if chip select is HIGH
+    addreg <= 16'd0;
+    count <= 1'd0;
+    prev_sclk <= 1'b0;
+
+    end
+ end else begin
+   if (syncedcs && transaction_processed)begin
+        transaction_processed <= 1'b0;
+        transaction_ready <= 1'b0;
+        addreg<=16'd0;
+        count<=1'd0;
+    end else if(syncedcs)begin                           //if chip select is HIGH
       transaction_ready <= 1'b1;
     end else if(~syncedcs) begin                              //if chip select is LOW
         if(syncedsclk & ~prev_sclk)begin                //if its an edge
-        addreg[cout] <= syncedcopi;              //set the temp register to a bit count to the copi input
+        addreg[count] <= syncedcopi;              //set the temp register to a bit count to the copi input
         count++;                                //increases the count
         end
         prev_sclk <= syncedsclk;                 //sets current clock to previous clock
         transaction_ready <= 1'b0;
-    end
  end
 end
 
 
 always@(posedge clk or negedge reset)begin
 if(~reset)begin
-transaction_processed <= 1'b0;
+        transaction_processed <= 1'b0;
+        en_reg_out_7_0 <= 8'd0;
+        en_reg_out_15_8 <= 8'd0;
+        en_reg_pwm_7_0 <= 8'd0;
+        en_reg_pwm_15_8 <= 8'd0;
+        pwm_duty_cycle <= 8'd0;
+
+end else begin
 if(addreg[0] && transaction_ready) begin
     casez (addreg)
     16'bx0000000xxxxxxxxx: begin
