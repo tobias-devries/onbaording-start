@@ -68,21 +68,21 @@ if(~rst_n)begin
         pwm_duty_cycle <= 8'd0;
 
 end else begin
-if(addreg[0] && transaction_ready) begin
+if(addreg[0] && transaction_ready && count == 16) begin
     casez (addreg)
-    16'bz0000000zzzzzzzz: begin
+    16'b?0000000????????: begin
         en_reg_out_7_0<=addreg[7:0];
     end
-    16'bz0000001zzzzzzzz: begin
+    16'b?0000001????????: begin
         en_reg_out_15_8<=addreg[7:0];
     end
-    16'bz0000010zzzzzzzz: begin
+    16'b?0000010????????: begin
         en_reg_pwm_7_0<=addreg[7:0];
     end 
-    16'bz0000011zzzzzzzz: begin
+    16'b?0000011????????: begin
         en_reg_pwm_15_8<=addreg[7:0];
     end
-    16'bz0000100zzzzzzzz: begin
+    16'b?0000100????????: begin
         pwm_duty_cycle<=addreg[7:0];
     end 
     default: begin
