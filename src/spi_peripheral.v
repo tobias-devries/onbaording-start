@@ -15,8 +15,9 @@ module spi_peripheral(
 reg [2:0] syncbit1, syncbit2, syncbit3;
 reg syncedsclk, syncedcs, syncedcopi;
 reg [15:0] addreg;
-reg [3:0] count;
-reg prev_sclk = 1'b0;
+reg [4:0] count;
+reg [3:0] index = 4'b1110;
+reg prev_sclk, prev_cs = 1'b0;
 reg transaction_processed = 1'b0;
 reg transaction_ready = 1'b0;
 
@@ -33,27 +34,30 @@ end
 
 always@(posedge clk or negedge rst_n)begin
  if(~rst_n)begin   
-     transaction_processed <= 1'b0;
     transaction_ready <= 1'b0;
     addreg <= 16'd0;
-    count <= 4'd0;
+    count <= 5'd0;
+    index<=4'b1110;
     prev_sclk <= 1'b0;
  end else begin
    if (syncedcs && transaction_processed)begin
-        transaction_processed <= 1'b0;
         transaction_ready <= 1'b0;
         addreg<=16'd0;
-        count<=4'd0;
-    end else if(syncedcs)begin                           //if chip select is HIGH
+        count<=5'd0;
+        index<=4'b1110;
+    end else if(syncedcs & ~prev_cs)begin                           //if chip select is HIGH
       transaction_ready <= 1'b1;
     end else if(~syncedcs) begin                              //if chip select is LOW
         if(syncedsclk & ~prev_sclk)begin                //if its an edge
-        addreg[count] <= syncedcopi;              //set the temp register to a bit count to the copi input
+        addreg[index] <= syncedcopi;              //set the temp register to a bit count to the copi input
+        if(count < 16)begin
         count <= count + 1;                                //increases the count
+        index <= index - 1;
+        end
         end
         prev_sclk <= syncedsclk;                 //sets current clock to previous clock
-        transaction_ready <= 1'b0;
   end
+  prev_cs <= syncedcs;
  end
 end
 
@@ -68,7 +72,7 @@ if(~rst_n)begin
         pwm_duty_cycle <= 8'd0;
 
 end else begin
-if(addreg[0] && transaction_ready) begin
+if(addreg[15] && transaction_ready && count == 16) begin
     casez (addreg)
     16'b?0000000????????: begin
         en_reg_out_7_0<=addreg[7:0];
