@@ -70,25 +70,14 @@ if(~rst_n)begin
         en_reg_pwm_7_0 <= 8'd0;
         en_reg_pwm_15_8 <= 8'd0;
         pwm_duty_cycle <= 8'd0;
-
 end else begin
 if(addreg[15] && transaction_ready && count == 16) begin
-    casez (addreg)
-    16'b?0000000????????: begin
-        en_reg_out_7_0<=addreg[7:0];
-    end
-    16'b?0000001????????: begin
-        en_reg_out_15_8<=addreg[7:0];
-    end
-    16'b?0000010????????: begin
-        en_reg_pwm_7_0<=addreg[7:0];
-    end 
-    16'b?0000011????????: begin
-        en_reg_pwm_15_8<=addreg[7:0];
-    end
-    16'b?0000100????????: begin
-        pwm_duty_cycle<=addreg[7:0];
-    end 
+    casez (addreg[15:8])
+    7'b0000000: en_reg_out_7_0<=addreg[7:0];
+    7'b0000001: en_reg_out_15_8<=addreg[7:0];
+    7'b0000010: en_reg_pwm_7_0<=addreg[7:0];
+    7'b0000011: en_reg_pwm_15_8<=addreg[7:0];
+    7'b0000100: pwm_duty_cycle<=addreg[7:0];
     default: begin
     end
     endcase
