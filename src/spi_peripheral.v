@@ -16,10 +16,10 @@ reg [2:0] syncbit1, syncbit2, syncbit3;
 reg syncedsclk, syncedcs, syncedcopi;
 reg [15:0] addreg;
 reg [4:0] count;
-reg [3:0] index = 4'b1111;
-reg prev_sclk, prev_cs = 1'b0;
-reg transaction_processed = 1'b0;
-reg transaction_ready = 1'b0;
+reg [3:0] index;
+reg prev_sclk, prev_cs;
+reg transaction_processed;
+reg transaction_ready;
 
 always@(posedge clk or negedge rst_n)begin
 if(~rst_n)begin
