@@ -60,7 +60,6 @@ always@(posedge clk or negedge rst_n)begin
     end else if(~syncedcs && prev_cs)begin                          
       transaction_ready <= 1'b1;
       prev_sclk <= 1'b0;
-      transaction_processed <= 1'b0; 
       count <= 5'd0;
       index<=4'b1111;
     end else if(~syncedcs) begin                  
@@ -88,7 +87,10 @@ if(~rst_n)begin
         en_reg_pwm_15_8 <= 8'd0;
         pwm_duty_cycle <= 8'd0;
 end else begin
-if(addreg[15] && transaction_ready && count == 16) begin
+        if (~syncedcs && prev_cs) begin        
+      transaction_processed <= 1'b0;             
+    end
+if(addreg[15] && transaction_ready && count == 16 && !transaction_processed) begin
     case (addreg[14:8])
     7'b0000000: en_reg_out_7_0<=addreg[7:0];
     7'b0000001: en_reg_out_15_8<=addreg[7:0];
