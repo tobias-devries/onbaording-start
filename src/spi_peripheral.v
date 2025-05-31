@@ -49,6 +49,7 @@ always@(posedge clk or negedge rst_n)begin
     index<=4'b1111;
     prev_sclk <= 1'b0;
     prev_cs <= 1'b1;
+    transaction_processed <= 1'b0;
  end else begin
    if (syncedcs && transaction_processed)begin
         transaction_ready <= 1'b0;
