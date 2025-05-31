@@ -21,6 +21,7 @@ reg prev_sclk, prev_cs;
 reg transaction_processed;
 reg transaction_ready;
 
+//Prevents Metastability
 always@(posedge clk or negedge rst_n)begin
 if(~rst_n)begin
 syncbit1 <= 3'b000;
@@ -40,7 +41,7 @@ end
 end
 
 
-
+//Shifts Signals into and Address
 always@(posedge clk or negedge rst_n)begin
  if(~rst_n)begin   
     transaction_ready <= 1'b0;
@@ -76,7 +77,7 @@ always@(posedge clk or negedge rst_n)begin
  end
 end
 
-
+//Validates, picks correct adress then sends data
 always@(posedge clk or negedge rst_n)begin
 if(~rst_n)begin
         transaction_processed <= 1'b0;
