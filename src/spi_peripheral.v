@@ -21,13 +21,22 @@ reg prev_sclk, prev_cs = 1'b0;
 reg transaction_processed = 1'b0;
 reg transaction_ready = 1'b0;
 
-always@(posedge clk)begin
+always@(posedge clk or negedge rst_n)begin
+if(~rst_n)begin
+syncbit1 <= 3'b000;
+syncbit2 <= 3'b000;
+syncbit3 <= 3'b000;
+syncedsclk <= 1'b0;
+syncedcopi <= 1'b0;
+syncedcs <= 1'b1;
+end else begin
 syncbit1<=ui_in;
 syncbit2<=syncbit1;
 syncbit3<=syncbit2;
 syncedsclk<=syncbit3[0];
 syncedcopi<=syncbit3[1];
 syncedcs<=syncbit3[2];
+end
 end
 
 
@@ -39,24 +48,31 @@ always@(posedge clk or negedge rst_n)begin
     count <= 5'd0;
     index<=4'b1110;
     prev_sclk <= 1'b0;
+    prev_cs <= 1'b1;
  end else begin
    if (syncedcs && transaction_processed)begin
         transaction_ready <= 1'b0;
         addreg<=16'd0;
         count<=5'd0;
         index<=4'b1110;
-    end else if(syncedcs & ~prev_cs)begin                           //if chip select is HIGH
+        prev_sclk <= 1'b0;
+    end else if(~syncedcs && prev_cs)begin                          
       transaction_ready <= 1'b1;
-    end else if(~syncedcs) begin                              //if chip select is LOW
-        if(syncedsclk & ~prev_sclk)begin                //if its an edge
-        addreg[index] <= syncedcopi;              //set the temp register to a bit count to the copi input
+      prev_sclk <= 1'b0;
+      transaction_processed <= 1'b0; 
+      count <= 5'd0;
+      index<=4'b1110;
+    end else if(~syncedcs) begin                  
+        if(syncedsclk & ~prev_sclk)begin          
+        addreg[index] <= syncedcopi;              
         if(count < 16)begin
-        count <= count + 1;                                //increases the count
+        count <= count + 1;                                
         index <= index - 1;
         end
         end
-        prev_sclk <= syncedsclk;                 //sets current clock to previous clock
+        prev_sclk <= syncedsclk;                 
   end
+    
   prev_cs <= syncedcs;
  end
 end
@@ -72,7 +88,7 @@ if(~rst_n)begin
         pwm_duty_cycle <= 8'd0;
 end else begin
 if(addreg[15] && transaction_ready && count == 16) begin
-    casez (addreg[15:8])
+    case (addreg[14:8])
     7'b0000000: en_reg_out_7_0<=addreg[7:0];
     7'b0000001: en_reg_out_15_8<=addreg[7:0];
     7'b0000010: en_reg_pwm_7_0<=addreg[7:0];
