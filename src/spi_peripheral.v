@@ -16,7 +16,7 @@ reg [2:0] syncbit1, syncbit2, syncbit3;
 reg syncedsclk, syncedcs, syncedcopi;
 reg [15:0] addreg;
 reg [4:0] count;
-reg [3:0] index = 4'b1110;
+reg [3:0] index = 4'b1111;
 reg prev_sclk, prev_cs = 1'b0;
 reg transaction_processed = 1'b0;
 reg transaction_ready = 1'b0;
@@ -46,7 +46,7 @@ always@(posedge clk or negedge rst_n)begin
     transaction_ready <= 1'b0;
     addreg <= 16'd0;
     count <= 5'd0;
-    index<=4'b1110;
+    index<=4'b1111;
     prev_sclk <= 1'b0;
     prev_cs <= 1'b1;
  end else begin
@@ -54,14 +54,14 @@ always@(posedge clk or negedge rst_n)begin
         transaction_ready <= 1'b0;
         addreg<=16'd0;
         count<=5'd0;
-        index<=4'b1110;
+        index<=4'b1111;
         prev_sclk <= 1'b0;
     end else if(~syncedcs && prev_cs)begin                          
       transaction_ready <= 1'b1;
       prev_sclk <= 1'b0;
       transaction_processed <= 1'b0; 
       count <= 5'd0;
-      index<=4'b1110;
+      index<=4'b1111;
     end else if(~syncedcs) begin                  
         if(syncedsclk & ~prev_sclk)begin          
         addreg[index] <= syncedcopi;              
