@@ -7,6 +7,8 @@ from cocotb.triggers import RisingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
+from cocotb.utils import get_sim_time
+from cocotb.result import TestFailure
 
 async def await_half_sclk(dut):
     """Wait for the SCLK signal to go high or low."""
@@ -165,7 +167,7 @@ async def wait_for_level(dut, prev_level, desired_level, max_cycles=5000):
         if bit0 == desired_level:
             return get_sim_time("ns")
     stuck = (int(dut.uo_out.value) & 1)
-    raise TestFailure(f"Timeout: PWM never reached {desired_level}; stuck at {stuck} after {max_cycles} cycles"
+    raise TestFailure(f"Timeout: PWM never reached {desired_level}; stuck at {stuck} after {max_cycles} cycles")
                       
                       
 @cocotb.test()
