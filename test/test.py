@@ -151,9 +151,39 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
-    # Write your test here
-    dut._log.info("PWM Frequency test completed successfully")
+    dut.log.info("Start PWM Frequency Test");
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
 
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    #Test Frequency of PWM
+    dut._log.info("Test PWM Behaviour")
+    dut._log.info("Write transaction, address 0x00, data 0x01")
+    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)      # Enable Output
+    await send_spi_transaction(dut, 1, 0x02, 0x01);                 #send something
+    await send_spi_transaction(dut, 1, 0x04, 0x01);                 #Set duty cycle to anything but 0% and 100%
+    
+    await ClockCycles(dut.clk, 5000); #wait for things to settle
+    
+    t1 = await wait_for_level(dut,0,1,max_cycles=5000)              #measure 2 rising edges
+    t2 = await wait_for_level(dut,0,1,max_cycles=5000)
+    
+    period_nano = t2 -t1                                            #calculate period  in nano seconds
+    frequency = 1e-9/period_nano                                    #calculate frequency
+    dut._log.info("Measured period %d ns ⇒ %.1f Hz" % (period_nano, frequency)) 
+    assert 2900 > frequency > 3100, f"Got {frequency:.1f} Hz, expected ~3000 Hz"
+    dut._log.info("PWM Frequency test completed successfully")
+    
 
 @cocotb.test()
 async def test_pwm_duty(dut):
