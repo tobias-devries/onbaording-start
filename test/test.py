@@ -179,9 +179,9 @@ async def test_pwm_freq(dut):
     t2 = await wait_for_level(dut,0,1,max_cycles=5000)
     
     period_nano = t2 -t1                                            #calculate period  in nano seconds
-    frequency = 1e-9/period_nano                                    #calculate frequency
+    frequency = 1e9/period_nano                                    #calculate frequency
     dut._log.info("Measured period %d ns ⇒ %.1f Hz" % (period_nano, frequency)) 
-    assert 2900 > frequency > 3100, f"Got {frequency:.1f} Hz, expected ~3000 Hz"
+    assert 2970 < frequency < 3030, f"Got {frequency:.1f} Hz, expected ~3000 Hz"
     dut._log.info("PWM Frequency test completed successfully")
     
 
