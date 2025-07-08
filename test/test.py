@@ -149,6 +149,25 @@ async def test_spi(dut):
 
     dut._log.info("SPI test completed successfully")
 
+async def wait_for_level(dut, prev_level, desired_level, max_cycles=5000):
+    for _ in range(max_cycles):
+        await ClockCycles(dut.clk, 1)
+        if (int(dut.uo_out.value) & 1) == prev_level:
+            break
+    else:
+        stuck = int(dut.uo_out.value) & 1
+        raise TestFailure(
+            f"Timeout: PWM never reached prev_level={prev_level}; stuck at {stuck} after {max_cycles} cycles"
+        )
+    for _ in range(max_cycles):
+        await ClockCycles(dut.clk, 1)
+        bit0 = int(dut.uo_out.value) & 1
+        if bit0 == desired_level:
+            return get_sim_time("ns")
+    stuck = (int(dut.uo_out.value) & 1)
+    raise TestFailure(f"Timeout: PWM never reached {desired_level}; stuck at {stuck} after {max_cycles} cycles"
+                      
+                      
 @cocotb.test()
 async def test_pwm_freq(dut):
     dut.log.info("Start PWM Frequency Test");
