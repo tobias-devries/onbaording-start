@@ -208,5 +208,46 @@ async def test_pwm_freq(dut):
 
 @cocotb.test()
 async def test_pwm_duty(dut):
-    # Write your test here
+    dut._log.info("Start PWM Duty Cycle Test")
+    cocotb.start_soon(Clock(dut.clk, 100, units="ns").start())
+
+    # Reset
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    dut.ena.value = 1
+    # Initial SPI setup
+    dut.ui_in.value = ui_in_logicarray(1, 0, 0)
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 1)
+    pwm_sig = dut.uo_out[0]
+
+    # 50% duty cycle
+    await send_spi_transaction(dut, 1, 0x04, 128)
+    await ClockCycles(dut.clk, 7000)
+
+    # timeout based on expected ~3 kHz period
+    period_expected = 1e9 / 3000
+    timeout         = int(period_expected * 2)
+
+    t1 = await wait_for_level(pwm_sig, 1, max_cycles=timeout)
+    tn = await wait_for_level(pwm_sig, 0, max_cycles=timeout)
+    t2 = await wait_for_level(pwm_sig, 1, max_cycles=timeout)
+
+    high_ns = tn - t1
+    period_ns = t2 - t1
+    duty = 100 * high_ns / period_ns
+    assert 49 <= duty <= 51, f"50%: measured {duty:.1f}%, outside of 50 ± 1%"
+
+    # 0% duty cycle
+    await send_spi_transaction(dut, 1, 0x04, 0)
+    await ClockCycles(dut.clk, 7000)
+    assert int(pwm_sig.value) == 0, f"0%: saw {int(pwm_sig.value)}, expected always 0"
+
+    # 100% duty cycle
+    await send_spi_transaction(dut, 1, 0x04, 255)
+    await ClockCycles(dut.clk, 7000)
+    assert int(pwm_sig.value) == 1, f"100%: saw {int(pwm_sig.value)}, expected always 1"
+
     dut._log.info("PWM Duty Cycle test completed successfully")
