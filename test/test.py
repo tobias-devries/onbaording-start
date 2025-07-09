@@ -231,9 +231,9 @@ async def test_pwm_duty(dut):
     period_expected = 1e9 / 3000
     timeout         = int(period_expected * 2)
 
-    t1 = await wait_for_level(pwm_sig, 1, max_cycles=timeout)
-    tn = await wait_for_level(pwm_sig, 0, max_cycles=timeout)
-    t2 = await wait_for_level(pwm_sig, 1, max_cycles=timeout)
+    t1 = await wait_for_level(dut, 1, max_cycles=5000)
+    tn = await wait_for_level(dut, 0, max_cycles=5000)
+    t2 = await wait_for_level(dut, 1, max_cycles=5000)
 
     high_ns = tn - t1
     period_ns = t2 - t1
